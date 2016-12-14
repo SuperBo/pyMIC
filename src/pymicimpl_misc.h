@@ -56,7 +56,7 @@ void target_load_library(int device, const std::string &,
                               std::string &, uintptr_t &);
 void target_unload_library(int device, const std::string &, uintptr_t);
 uintptr_t find_kernel(int device, uintptr_t handle, const std::string &kernel_name);
-LIBXSTREAM_TARGET(mic)
+//LIBXSTREAM_TARGET(mic)
 void pymic_translate_pointer(const void *pointer, uintptr_t *translated);
 
 struct internal_exception : public std::exception {

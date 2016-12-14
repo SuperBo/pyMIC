@@ -1,0 +1,3 @@
+[submodule "src/libxstream"]
+	path = src/libxstream
+	url = https://github.com/hfp/libxstream
