@@ -194,6 +194,7 @@ class OffloadStream:
         # TODO: add more safety checks here (e.g., pointer from right device
         #       and stream)
 
+        self.sync()
         pymic_stream_deallocate(self._device_id, self._stream_id,
                                 device_ptr._device_ptr)
         debug(2, 'deallocated pointer {0} on device {1}',
