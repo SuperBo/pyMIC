@@ -449,7 +449,7 @@ class OffloadArray(object):
            --------
            zero
         """
-        if self.dtype != type(value):
+        if not numpy.issubdtype(self.dtype, type(value)):
             raise ValueError("Data types do not match: "
                              "{0} != {1}".format(self.dtype, type(value)))
 
@@ -501,11 +501,11 @@ class OffloadArray(object):
            fill
         """
         if zero_value is None:
-            if self.dtype == int:
+            if numpy.issubdtype(self.dtype, numpy.int):
                 zero_value = 0
-            elif self.dtype == float:
+            elif numpy.issubdtype(self.dtype, numpy.float):
                 zero_value = 0.0
-            elif self.dtype == complex:
+            elif numpy.issubdtype(self.dtype, numpy.complex):
                 zero_value = complex(0.0, 0.0)
             else:
                 raise ValueError("Do not know representation of zero "
@@ -529,11 +529,11 @@ class OffloadArray(object):
            fill
         """
         if one_value is None:
-            if self.dtype == int:
+            if numpy.issubdtype(self.dtype, numpy.int):
                 one_value = 1
-            elif self.dtype == float:
+            elif numpy.issubdtype(self.dtype, numpy.float):
                 one_value = 1.0
-            elif self.dtype == complex:
+            elif numpy.issubdtype(self.dtype, numpy.complex):
                 one_value = complex(1.0, 0.0)
             else:
                 raise ValueError("Do not know representation of one "
