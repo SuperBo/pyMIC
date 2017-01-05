@@ -51,6 +51,33 @@ for d in devices:
         _offload_libraries[d] = dev.load_library("liboffload_array.so")
 
 
+def _get_stride(shape, dim):
+    if dim < -1:
+        return 0
+    stride = 1
+    for s in shape[dim+1:]:
+        stride *= s
+    return stride
+
+
+def _get_dimsize(shape, dim):
+    if dim < 0:
+        return 1
+    size = 1
+    for s in shape[:dim+1]:
+        size *= s
+    return size
+
+
+def _get_broadcast_dim(shape_a, shape_b):
+    n = 0
+    for dim1, dim2 in zip(shape_a[::-1], shape_b[::-1]):
+        if dim1 != dim2:
+            raise ValueError("Not supported array shape")
+        n -= 1
+    return n - 1
+
+
 def _check_arrays(arr_a, arr_b):
     if arr_a.shape != arr_b.shape:
         raise ValueError("shapes of the arrays do not match: "
@@ -212,42 +239,65 @@ class OffloadArray(object):
         """
 
         dt = map_data_types(self.dtype)
-        n = int(self.size)
         x = self
         y = other
         incx = int(1)
+        incr = int(1)
         if isinstance(other, (OffloadArray, numpy.ndarray)):
-            _check_arrays(self, other)
+            broadcast_dim = _get_broadcast_dim(self.shape, other.shape)
+            if y.ndim > self.ndim:
+                x, y = y, x
+            shape = x.shape
+            dim_x = x.ndim + broadcast_dim
+            dim_y = y.ndim + broadcast_dim
+            niter = _get_dimsize(x.shape, dim_x)
+            n = incix = _get_stride(x.shape, dim_x)
+            incir = incix
+            inciy = int(0)
             incy = int(1)
-            incr = int(1)
         else:
             # scalar
             _check_scalar(self, other)
-            incy = int(0)
-            incr = int(1)
-        result = OffloadArray(self.shape, self.dtype, device=self.device,
+            n = int(self.size)
+            shape = self.shape
+            niter = int(1)
+            incix = incir = _get_stride(x.shape, -1)
+            inciy = incy = int(0)
+        result = OffloadArray(shape, self.dtype, device=self.device,
                               stream=self.stream)
+        print("N: {} {}, x: {} {}, y: {} {}, r: {} {}".format(niter, n, incix, incx, inciy, incy, incir, incr))
         self.stream.invoke(self._library.pymic_offload_array_add,
-                           dt, n, x, incx, y, incy, result, incr)
+                           dt, niter, n, x, incix, incx, y, inciy, incy, result, incir, incr)
         return result
 
     def __iadd__(self, other):
         """Add an array or scalar to an array (in-place operation)."""
 
         dt = map_data_types(self.dtype)
-        n = int(self.size)
         x = self
         y = other
         incx = int(1)
         if isinstance(other, (OffloadArray, numpy.ndarray)):
-            _check_arrays(self, other)
+            if x.ndim < y.ndim:
+                raise ValueError("non broadcastable output:"
+                                " {} doesn't match {}".format(x.shape, y.shape))
+            broadcast_dim = _get_broadcast_dim(self.shape, other.shape)
+            dim_x = self.ndim + broadcast_dim
+            dim_y = other.ndim + broadcast_dim
+            niter = _get_dimsize(self.shape, dim_x)
+            n = incix = _get_stride(self.shape, dim_x)
+            inciy = int(0)
             incy = int(1)
         else:
             # scalar
             _check_scalar(self, other)
-            incy = int(0)
+            n = int(self.size)
+            shape = self.shape
+            niter = int(1)
+            incix = _get_stride(self.shape, -1)
+            inciy = incy = int(0)
         self.stream.invoke(self._library.pymic_offload_array_add,
-                           dt, n, x, incx, y, incy, x, incx)
+                           dt, niter, n, x, incix, incx, y, inciy, incy, x, incix, incx)
         return self
 
     def __sub__(self, other):
