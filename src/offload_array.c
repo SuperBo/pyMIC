@@ -278,7 +278,7 @@ void pymic_offload_array_fill(const int64_t *dtype, const int64_t *n,
     case DTYPE_INT32:
         {
             int32_t  *x  = (int32_t *)ptr;
-            int32_t   v  = *(const int32_t *)value;
+            int32_t   v  = (int32_t) *(const int64_t *)value;
             for (i = 0; i < *n; i++) {
                 x[i] = v;
             }
@@ -296,7 +296,7 @@ void pymic_offload_array_fill(const int64_t *dtype, const int64_t *n,
     case DTYPE_FLOAT32:
         {
             float  *x  = (float *)ptr;
-            float   v  = *(const float *)value;
+            float   v  = (float) *(const double *)value;
             for (i = 0; i < *n; i++) {
                 x[i] = v;
             }
