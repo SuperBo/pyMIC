@@ -116,10 +116,14 @@ class OffloadArray(object):
         self.base = base
 
         # save a reference to the device
-        assert device is not None
-        assert stream is not None
-        self.device = device
-        self.stream = stream
+        if base is not None:
+            self.device = base.device
+            self.stream = base.stream
+        else:
+            assert device is not None
+            assert stream is not None
+            self.device = device
+            self.stream = stream
 
         # determine size of the array from its shape
         try:
@@ -139,14 +143,13 @@ class OffloadArray(object):
 
         if base is not None:
             self.array = base.array.reshape(shape)
+            self._device_ptr = base._device_ptr
         else:
             if alloc_arr:
-                if stream is None:
-                    stream = self.stream
                 self.array = numpy.empty(self.shape, self.dtype, self.order)
                 self._device_ptr = stream.allocate_device_memory(self._nbytes)
 
-        self._library = _offload_libraries[device.device_id]
+        self._library = _offload_libraries[self.device.device_id]
 
     def __str__(self):
         return str(self.array)
@@ -589,7 +592,7 @@ class OffloadArray(object):
         if size != self.size:
             raise ValueError("total size of reshaped array must be unchanged")
         return OffloadArray(shape, self.dtype, self.order,
-                            False, self, device=self.device)
+                            False, self)
 
     def ravel(self):
         """Return a flattened array.
