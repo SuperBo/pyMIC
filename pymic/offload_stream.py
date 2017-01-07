@@ -819,7 +819,7 @@ class OffloadStream:
         return array
 
     @trace
-    def empty_like(self, other, update_host=True):
+    def empty_like(self, other, dtype=None, update_host=True):
         """Create a new OffloadArray that is bound to an empty numpy.ndarray
            that matches shape and type of an existing OffloadArray or
            numpy.ndarray.  If update_host is True (the default), then the empty
@@ -862,7 +862,8 @@ class OffloadStream:
                 not isinstance(other, pymic.OffloadArray)):
             raise ValueError("only numpy.ndarray can be used "
                              "with this function")
-        return self.empty(other.shape, other.dtype, get_order(other),
+        _dtype = other.dtype if dtype is None else dtype
+        return self.empty(other.shape, _dtype, get_order(other),
                           update_host=update_host)
 
     @trace
@@ -922,7 +923,7 @@ class OffloadStream:
         return array
 
     @trace
-    def zeros_like(self, other, update_host=True):
+    def zeros_like(self, other, dtype=None, update_host=True):
         """Create a new OffloadArray that is bound to an empty numpy.ndarray
            that matches shape and type of an existing OffloadArray or
            numpy.ndarray.  If update_host is True (the default), then the empty
@@ -970,7 +971,8 @@ class OffloadStream:
                 and not isinstance(other, pymic.OffloadArray)):
             raise ValueError("only numpy.ndarray can be used "
                              "with this function")
-        return self.zeros(other.shape, other.dtype, get_order(other),
+        _dtype = other.dtype if dtype is None else dtype
+        return self.zeros(other.shape, _dtype, get_order(other),
                           update_host=update_host)
 
     @trace
@@ -1031,7 +1033,7 @@ class OffloadStream:
         return array
 
     @trace
-    def ones_like(self, other, update_host=True):
+    def ones_like(self, other, dtype=None, update_host=True):
         """Create a new OffloadArray that is bound to an empty numpy.ndarray
            that matches shape and type of an existing OffloadArray or
            numpy.ndarray.  If update_host is True (the default), then the empty
@@ -1079,7 +1081,8 @@ class OffloadStream:
                 not isinstance(other, pymic.OffloadArray)):
             raise ValueError("only numpy.ndarray can be used "
                              "with this function")
-        return self.ones(other.shape, other.dtype, get_order(other),
+        _dtype = other.dtype if dtype is None else dtype
+        return self.ones(other.shape, _dtype, get_order(other),
                          update_host=update_host)
 
     @trace
