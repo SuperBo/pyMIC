@@ -591,8 +591,9 @@ class OffloadArray(object):
             shape = (shape,)
         if size != self.size:
             raise ValueError("total size of reshaped array must be unchanged")
+        base = self if self.base is None else self.base
         return OffloadArray(shape, self.dtype, self.order,
-                            False, self)
+                            False, base)
 
     def ravel(self):
         """Return a flattened array.
