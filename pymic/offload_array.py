@@ -268,7 +268,6 @@ class OffloadArray(object):
             inciy = incy = int(0)
         result = OffloadArray(shape, self.dtype, device=self.device,
                               stream=self.stream)
-        print("N: {} {}, x: {} {}, y: {} {}, r: {} {}".format(niter, n, incix, incx, inciy, incy, incir, incr))
         self.stream.invoke(self._library.pymic_offload_array_add,
                            dt, niter, n, x, incix, incx, y, inciy, incy, result, incir, incr)
         return result
