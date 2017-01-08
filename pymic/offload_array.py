@@ -87,10 +87,9 @@ def _check_arrays(arr_a, arr_b):
                          "{0} != {1}".format(arr_a.dtype, arr_b.dtype))
 
 
-def _check_scalar(array, scalar):
-    if array.dtype != type(scalar):
-        raise ValueError("Data types do not match: "
-                         "{0} != {1}".format(array.dtype, type(scalar)))
+def _cast_scalar(array, scalar):
+    # This is a hack: wrap scalar into array of desired type
+    return numpy.asarray(scalar, dtype=array.dtype)
 
 
 class OffloadArray(object):
@@ -260,7 +259,7 @@ class OffloadArray(object):
             incy = int(1)
         else:
             # scalar
-            _check_scalar(self, other)
+            y = _cast_scalar(self, other)
             n = int(self.size)
             shape = self.shape
             niter = int(1)
@@ -292,7 +291,7 @@ class OffloadArray(object):
             incy = int(1)
         else:
             # scalar
-            _check_scalar(self, other)
+            y = _cast_scalar(self, other)
             n = int(self.size)
             shape = self.shape
             niter = int(1)
@@ -320,7 +319,7 @@ class OffloadArray(object):
             incr = int(1)
         else:
             # scalar
-            _check_scalar(self, other)
+            y = _cast_scalar(self, other)
             incy = int(0)
             incr = int(1)
         result = OffloadArray(self.shape, self.dtype, device=self.device,
@@ -342,7 +341,7 @@ class OffloadArray(object):
             incy = int(1)
         else:
             # scalar
-            _check_scalar(self, other)
+            y = _cast_scalar(self, other)
             incy = int(0)
         self.stream.invoke(self._library.pymic_offload_array_sub,
                            dt, n, x, incx, y, incy, x, incx)
@@ -366,7 +365,7 @@ class OffloadArray(object):
             incr = int(1)
         else:
             # scalar
-            _check_scalar(self, other)
+            y = _cast_scalar(self, other)
             incy = int(0)
             incr = int(1)
         result = OffloadArray(self.shape, self.dtype, device=self.device,
@@ -388,7 +387,7 @@ class OffloadArray(object):
             incy = int(1)
         else:
             # scalar
-            _check_scalar(self, other)
+            y = _cast_scalar(self, other)
             incy = int(0)
         self.stream.invoke(self._library.pymic_offload_array_mul,
                            dt, n, x, incx, y, incy, x, incx)
@@ -546,7 +545,7 @@ class OffloadArray(object):
             incr = int(1)
         else:
             # scalar
-            _check_scalar(self, other)
+            y = _cast_scalar(self, other)
             incy = int(0)
             incr = int(1)
         result = OffloadArray(self.shape, self.dtype, device=self.device,
