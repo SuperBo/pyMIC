@@ -412,16 +412,19 @@ class OffloadArray(object):
            --------
            zero
         """
-        if not numpy.issubdtype(self.dtype, type(value)):
-            raise ValueError("Data types do not match: "
-                             "{0} != {1}".format(self.dtype, type(value)))
+        if numpy.issubdtype(self.dtype, numpy.float):
+            val = float(value)
+        elif numpy.issubdtype(self.dtype, numpy.int):
+            val = int(value)
+        elif numpy.issubdtype(self.dtype, numpy.complex):
+            val = complex(value)
 
         dt = map_data_types(self.dtype)
         n = int(self.size)
         x = self
 
         self.stream.invoke(self._library.pymic_offload_array_fill,
-                           dt, n, x, value)
+                           dt, n, x, val)
 
         return self
 
