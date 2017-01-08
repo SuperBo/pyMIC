@@ -321,13 +321,68 @@ void pymic_offload_array_fillfrom(void *dst, const void *src, const int64_t *nby
     memcpy(dst, src, *nbytes);
 }
 
+#define _fillfrom(dst, src)\
+    int64_t i = 0;\
+    switch(*dtype) {\
+    case DTYPE_INT32:\
+        {\
+            int *_dst = (int*) dst;\
+            for (; i< *n; ++i) {\
+                _dst[i] = (int) src[i];\
+            }\
+        }\
+        break;\
+    case DTYPE_INT64:\
+        {\
+            long *_dst = (long*) dst;\
+            for (; i < *n; ++i) {\
+                _dst[i] = (long) src[i];\
+            }\
+        }\
+        break;\
+    case DTYPE_FLOAT32:\
+        {\
+            float *_dst = (float*) dst;\
+            for (; i < *n; ++i) {\
+                _dst[i] = (float) src[i];\
+            }\
+        }\
+        break;\
+    case DTYPE_FLOAT64:\
+        {\
+            double *_dst = (double*) dst;\
+            for (; i < *n; ++i) {\
+                _dst[i] = (double) src[i];\
+            }\
+        }\
+        break;\
+    }
+
+
+inline void pymic_offload_array_fillfrom_int32(const int64_t *dtype, const int64_t *n, void *dst, const int32_t *src) {
+    _fillfrom(dst, src);
+}
+
+inline void pymic_offload_array_fillfrom_int64(const int64_t *dtype, const int64_t *n, void *dst, const int64_t *src) {
+    _fillfrom(dst, src);
+}
+
+inline void pymic_offload_array_fillfrom_float32(const int64_t *dtype, const int64_t *n, void *dst, const float *src) {
+    _fillfrom(dst, src);
+}
+
+inline void pymic_offload_array_fillfrom_float64(const int64_t *dtype, const int64_t *n, void *dst, const double *src) {
+    _fillfrom(dst, src);
+}
 
 PYMIC_KERNEL
-void pymic_offload_array_setslice(const int64_t *dtype,
+void pymic_offload_array_setslice(const int64_t *dtype, const int64_t *sdtype,
                                   const int64_t *lower, const int64_t *upper,
                                   void *dst, const void *src) {
     /* pymic_offload_array_setslice(int lower, int upper,
                                     type  *dst, type  *src) */
+    void* _dst;
+    int64_t n = (*upper) - (*lower);
     int scale = 0;
     int nbytes;
     switch(*dtype) {
@@ -347,8 +402,30 @@ void pymic_offload_array_setslice(const int64_t *dtype,
         scale = 16; /* bytes */
         break;
     }
-    nbytes = ((*upper) - (*lower)) * scale;
-    memcpy(dst + ((*lower) * scale), src, nbytes);
+
+    _dst = dst + ((*lower) * scale);
+    if (*dtype != *sdtype)
+        goto SLICE_CAST;
+
+    nbytes = n * scale;
+    memcpy(_dst, src, nbytes);
+    return;
+
+SLICE_CAST:
+    switch (*sdtype) {
+    case DTYPE_INT32:
+        pymic_offload_array_fillfrom_int32(dtype, &n, _dst, (int32_t*) src);
+        break;
+    case DTYPE_INT64:
+        pymic_offload_array_fillfrom_int64(dtype, &n, _dst, (int64_t*) src);
+        break;
+    case DTYPE_FLOAT32:
+        pymic_offload_array_fillfrom_float32(dtype, &n, _dst, (float*) src);
+        break;
+    case DTYPE_FLOAT64:
+        pymic_offload_array_fillfrom_float64(dtype, &n, _dst, (double*) src);
+        break;
+    }
 }
 
 

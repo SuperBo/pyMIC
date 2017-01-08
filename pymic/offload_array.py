@@ -635,13 +635,22 @@ class OffloadArray(object):
             raise ValueError('Cannot assign with stride not equal to 1')
 
         dt = map_data_types(self.dtype)
-        if isinstance(sequence, OffloadArray):
+        n = ub - lb
+        if isinstance(sequence, (OffloadArray)):
+            if n != sequence.size:
+                raise ValueError('Could not copy from size {} into size {}'
+                                    .format(sequence.size, n))
+            src_dt = map_data_types(sequence.dtype)
             self.stream.invoke(self._library.pymic_offload_array_setslice,
-                               dt, lb, ub, self, sequence)
+                               dt, src_dt, lb, ub, self, sequence)
         elif isinstance(sequence, numpy.ndarray):
+            if n != sequence.size:
+                raise ValueError('Could not copy from size {} into size {}'
+                                    .format(sequence.size, n))
+            src_dt = map_data_types(sequence.dtype)
             offl_sequence = self.stream.bind(sequence)
             self.stream.invoke(self._library.pymic_offload_array_setslice,
-                               dt, lb, ub, self, offl_sequence)
+                               dt, src_dt, lb, ub, self, offl_sequence)
             self.stream.sync()
         else:
             self.fill(sequence)
