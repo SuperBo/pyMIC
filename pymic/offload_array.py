@@ -619,7 +619,10 @@ class OffloadArray(object):
            The operation is enqueued into the array's default stream object
            and completes asynchronously.
         """
-        lb, ub, stride = index.start, index.stop, index.step
+        if index is Ellipsis:
+            lb, ub, stride = 0, self.size, 1
+        else:
+            lb, ub, stride = index.start, index.stop, index.step
         if lb is None:
             lb = 0
         if ub is None:
