@@ -301,6 +301,11 @@ class OffloadArray(object):
                            dt, niter, n, x, incix, incx, y, inciy, incy, x, incix, incx)
         return self
 
+    def __radd__(self, other):
+        """Add an array to an array or scalar (reverse operation)."""
+
+        return self.__add__(other)
+
     def __sub__(self, other):
         """Subtract an array or scalar from an array.
 
@@ -347,6 +352,29 @@ class OffloadArray(object):
                            dt, n, x, incx, y, incy, x, incx)
         return self
 
+    def __rsub__(self, other):
+        """Subtract an array from an array or scalar (reverse operation)."""
+
+        dt = map_data_types(self.dtype)
+        n = int(self.size)
+        x = self
+        y = other
+        incx = int(1)
+        if isinstance(other, (OffloadArray, numpy.ndarray)):
+            _check_arrays(self, other)
+            incy = int(1)
+            incr = int(1)
+        else:
+            # scalar
+            y = _cast_scalar(self, other)
+            incy = int(0)
+            incr = int(1)
+        result = OffloadArray(self.shape, self.dtype, device=self.device,
+                              stream=self.stream)
+        self.stream.invoke(self._library.pymic_offload_array_sub,
+                           dt, n, y, incy, x, incx, result, incr)
+        return result
+
     def __mul__(self, other):
         """Multiply an array or a scalar with an array.
 
@@ -392,6 +420,11 @@ class OffloadArray(object):
         self.stream.invoke(self._library.pymic_offload_array_mul,
                            dt, n, x, incx, y, incy, x, incx)
         return self
+
+    def __rmul__(self, other):
+        """Multiply an array with an array or a scalar (reverse operation)."""
+
+        return self.__mul__(other)
 
     def fill(self, value):
         """Fill an array with the specified value.
