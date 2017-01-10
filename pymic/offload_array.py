@@ -426,6 +426,75 @@ class OffloadArray(object):
 
         return self.__mul__(other)
 
+    def __div__(self, other):
+        """Divide an array by an array or a scalar.
+
+           The operation is enqueued into the array's default stream object
+           and completes asynchronously.
+        """
+
+        dt = map_data_types(self.dtype)
+        n = int(self.size)
+        x = self
+        y = other
+        incx = int(1)
+        if isinstance(other, (OffloadArray, numpy.ndarray)):
+            _check_arrays(self, other)
+            incy = int(1)
+            incr = int(1)
+        else:
+            # scalar
+            y = _cast_scalar(self, other)
+            incy = int(0)
+            incr = int(1)
+        result = OffloadArray(self.shape, self.dtype, device=self.device,
+                              stream=self.stream)
+        self.stream.invoke(self._library.pymic_offload_array_div,
+                           dt, n, x, incx, y, incy, result, incr)
+        return result
+
+    def __idiv__(self, other):
+        """Divide an array by an array or a scalar (in-place opearation)."""
+
+        dt = map_data_types(self.dtype)
+        n = int(self.size)
+        x = self
+        y = other
+        incx = int(1)
+        if isinstance(other, (OffloadArray, numpy.ndarray)):
+            _check_arrays(self, other)
+            incy = int(1)
+        else:
+            # scalar
+            y = _cast_scalar(self, other)
+            incy = int(0)
+        self.stream.invoke(self._library.pymic_offload_array_div,
+                           dt, n, x, incx, y, incy, x, incx)
+        return self
+
+    def __rdiv__(self, other):
+        """Divide an array or a scalar by an array (reverse opearation)."""
+
+        dt = map_data_types(self.dtype)
+        n = int(self.size)
+        x = self
+        y = other
+        incx = int(1)
+        if isinstance(other, (OffloadArray, numpy.ndarray)):
+            _check_arrays(self, other)
+            incy = int(1)
+            incr = int(1)
+        else:
+            # scalar
+            y = _cast_scalar(self, other)
+            incy = int(0)
+            incr = int(1)
+        result = OffloadArray(self.shape, self.dtype, device=self.device,
+                              stream=self.stream)
+        self.stream.invoke(self._library.pymic_offload_array_div,
+                           dt, n, y, incy, x, incx, result, incr)
+        return result
+
     def fill(self, value):
         """Fill an array with the specified value.
 

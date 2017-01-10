@@ -259,6 +259,70 @@ void pymic_offload_array_mul(const int64_t *dtype, const int64_t *n,
 
 
 PYMIC_KERNEL
+void pymic_offload_array_div(const int64_t *dtype, const int64_t *n,
+                             const void *x_, const int64_t *incx,
+                             const void *y_, const int64_t *incy,
+                             void *r_, const int64_t *incr) {
+    /* pymic_offload_array_mul(int dtype, int n, type  *x, int incx, type  *y,
+                         int incy, type  *result, int incr) */
+    size_t i, ix, iy, ir;
+    i = ix = iy = ir = 0;
+    switch(*dtype) {
+    case DTYPE_INT64:
+        {
+            const int64_t *x = (const int64_t *)x_;
+            const int64_t *y = (const int64_t *)y_;
+            int64_t *r = (int64_t *)r_;
+            for (; i < *n; i++, ix += *incx, iy += *incy, ir += *incr) {
+                r[ir] = x[ix] / y[iy];
+            }
+        }
+        break;
+    case DTYPE_INT32:
+        {
+            const int32_t *x = (const int32_t *)x_;
+            const int32_t *y = (const int32_t *)y_;
+            int32_t *r = (int32_t *)r_;
+            for (; i < *n; i++, ix += *incx, iy += *incy, ir += *incr) {
+                r[ir] = x[ix] / y[iy];
+            }
+        }
+        break;
+    case DTYPE_FLOAT64:
+        {
+            const double *x = (const double *)x_;
+            const double *y = (const double *)y_;
+            double *r = (double *)r_;
+            for (; i < *n; i++, ix += *incx, iy += *incy, ir += *incr) {
+                r[ir] = x[ix] / y[iy];
+            }
+        }
+        break;
+    case DTYPE_FLOAT32:
+        {
+            const float *x = (const float *)x_;
+            const float *y = (const float *)y_;
+            float *r = (float *)r_;
+            for (; i < *n; i++, ix += *incx, iy += *incy, ir += *incr) {
+                r[ir] = x[ix] / y[iy];
+            }
+        }
+        break;
+    case DTYPE_COMPLEX:
+        {
+            const double complex *x = (const double complex *)x_;
+            const double complex *y = (const double complex *)y_;
+            double complex *r = (double complex *)r_;
+            for (; i < *n; i++, ix += *incx, iy += *incy, ir += *incr) {
+                r[ir] = x[ix] / y[iy];
+            }
+        }
+        break;
+    }
+}
+
+
+PYMIC_KERNEL
 void pymic_offload_array_fill(const int64_t *dtype, const int64_t *n,
                               void *ptr, const void *value) {
     /* pymic_offload_array_fill(int dtype, int n,
