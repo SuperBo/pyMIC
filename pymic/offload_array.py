@@ -265,7 +265,7 @@ class OffloadArray(object):
             niter = int(1)
             incix = incir = _get_stride(x.shape, -1)
             inciy = incy = int(0)
-        result = OffloadArray(shape, self.dtype, device=self.device,
+        result = type(self)(shape, self.dtype, device=self.device,
                               stream=self.stream)
         self.stream.invoke(self._library.pymic_offload_array_add,
                            dt, niter, n, x, incix, incx, y, inciy, incy, result, incir, incr)
@@ -327,7 +327,7 @@ class OffloadArray(object):
             y = _cast_scalar(self, other)
             incy = int(0)
             incr = int(1)
-        result = OffloadArray(self.shape, self.dtype, device=self.device,
+        result = type(self)(self.shape, self.dtype, device=self.device,
                               stream=self.stream)
         self.stream.invoke(self._library.pymic_offload_array_sub,
                            dt, n, x, incx, y, incy, result, incr)
@@ -369,7 +369,7 @@ class OffloadArray(object):
             y = _cast_scalar(self, other)
             incy = int(0)
             incr = int(1)
-        result = OffloadArray(self.shape, self.dtype, device=self.device,
+        result = type(self)(self.shape, self.dtype, device=self.device,
                               stream=self.stream)
         self.stream.invoke(self._library.pymic_offload_array_sub,
                            dt, n, y, incy, x, incx, result, incr)
@@ -396,7 +396,7 @@ class OffloadArray(object):
             y = _cast_scalar(self, other)
             incy = int(0)
             incr = int(1)
-        result = OffloadArray(self.shape, self.dtype, device=self.device,
+        result = type(self)(self.shape, self.dtype, device=self.device,
                               stream=self.stream)
         self.stream.invoke(self._library.pymic_offload_array_mul,
                            dt, n, x, incx, y, incy, result, incr)
@@ -447,7 +447,7 @@ class OffloadArray(object):
             y = _cast_scalar(self, other)
             incy = int(0)
             incr = int(1)
-        result = OffloadArray(self.shape, self.dtype, device=self.device,
+        result = type(self)(self.shape, self.dtype, device=self.device,
                               stream=self.stream)
         self.stream.invoke(self._library.pymic_offload_array_div,
                            dt, n, x, incx, y, incy, result, incr)
@@ -489,7 +489,7 @@ class OffloadArray(object):
             y = _cast_scalar(self, other)
             incy = int(0)
             incr = int(1)
-        result = OffloadArray(self.shape, self.dtype, device=self.device,
+        result = type(self)(self.shape, self.dtype, device=self.device,
                               stream=self.stream)
         self.stream.invoke(self._library.pymic_offload_array_div,
                            dt, n, y, incy, x, incx, result, incr)
@@ -650,7 +650,7 @@ class OffloadArray(object):
             y = _cast_scalar(self, other)
             incy = int(0)
             incr = int(1)
-        result = OffloadArray(self.shape, self.dtype, device=self.device,
+        result = type(self)(self.shape, self.dtype, device=self.device,
                               stream=self.stream)
         self.stream.invoke(self._library.pymic_offload_array_pow,
                            dt, n, x, incx, y, incy, result, incr)
@@ -695,7 +695,7 @@ class OffloadArray(object):
         if size != self.size:
             raise ValueError("total size of reshaped array must be unchanged")
         base = self if self.base is None else self.base
-        return OffloadArray(shape, self.dtype, self.order,
+        return type(self)(shape, self.dtype, self.order,
                             False, base)
 
     def ravel(self):
